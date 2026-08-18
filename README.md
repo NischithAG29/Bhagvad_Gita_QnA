@@ -2,7 +2,7 @@
 
 An intelligent, domain-specific Retrieval-Augmented Generation (RAG) research assistant built to navigate, search, and synthesize insights across **128 complete podcast episodes** of Swami Anish Chaitanya's Bhagavad Gita series.
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://bhagvadgitaqna.streamlit.app/)
+Click here: [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://bhagvadgitaqna.streamlit.app/)
 ---
 
 ## 📌 Overview

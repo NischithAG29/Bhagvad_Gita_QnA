@@ -7,9 +7,15 @@ from google.genai import types
 
 st.set_page_config(page_title="Bhagavad Gita AI Navigator", page_icon="🕉️", layout="wide")
 
-if "GEMINI_API_KEY" not in os.environ:
-    st.error("⚠️ GEMINI_API_KEY environment variable is not set.")
+# Read API Key from Streamlit Secrets or OS Environment
+api_key = st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
+
+if not api_key:
+    st.error("⚠️ GEMINI_API_KEY is not set. Please add it to `.streamlit/secrets.toml` or set it as an environment variable.")
     st.stop()
+
+# Initialize Gemini Client with explicit API key
+client = genai.Client(api_key=api_key)
 
 DB_FILE = "gita_search.db"
 
@@ -24,6 +30,7 @@ def query_transcripts(search_query: str) -> str:
     clean_query = "".join([c if c.isalnum() or c.isspace() else " " for c in search_query]).strip()
     words = clean_query.split()
     if not words:
+        conn.close()
         return "[]"
     
     fts_query = " OR ".join(words)
@@ -48,8 +55,6 @@ def query_transcripts(search_query: str) -> str:
             "url": f"https://www.youtube.com/watch?v={r[1]}&t={r[3]}s"
         })
     return json.dumps(results)
-
-client = genai.Client()
 
 def ask_agent(user_question: str):
     chat = client.chats.create(

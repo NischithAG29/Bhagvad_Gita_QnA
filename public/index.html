@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jijñāsu Saṁvāda: ask Swami Anish Chaitanya's Gita talks</title>
+<meta name="description" content="Ask a question about the Bhagavad Gita and hear the answer in Swami Anish Chaitanya's own talks, with links to the exact moment in each video.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/fonts/tiro-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/mukta-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face { font-family: Tiro; src: url(/fonts/tiro-latin-400-normal.woff2) format("woff2"); font-display: swap; unicode-range: U+0000-00FF, U+2013-2014, U+2018-201D, U+2026; }
+@font-face { font-family: Tiro; src: url(/fonts/tiro-latin-ext-400-normal.woff2) format("woff2"); font-display: swap; unicode-range: U+0100-02AF, U+1E00-1EFF; }
+@font-face { font-family: Tiro; font-style: italic; src: url(/fonts/tiro-latin-400-italic.woff2) format("woff2"); font-display: swap; }
+@font-face { font-family: Mukta; font-weight: 400; src: url(/fonts/mukta-latin-400-normal.woff2) format("woff2"); font-display: swap; }
+@font-face { font-family: Mukta; font-weight: 600; src: url(/fonts/mukta-latin-600-normal.woff2) format("woff2"); font-display: swap; }
+
+:root {
+  --chandan: #FAF0D7;      /* sandal paste: the ground */
+  --patra: #FFF9EA;        /* palm leaf: raised surfaces */
+  --kesari: #E2720E;       /* saffron */
+  --kesari-deep: #C25A00;
+  --haldi: #F0B429;        /* turmeric */
+  --kumkum: #B0121B;       /* the tilak red */
+  --ink: #3A130E;          /* deep maroon-brown text */
+  --ink-soft: #7A5244;
+  --rule: #E9D3A2;
+  --serif: Tiro, "Iowan Old Style", Georgia, serif;
+  --sans: Mukta, "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--chandan); color: var(--ink); font: 400 17px/1.55 var(--sans); min-height: 100vh; display: flex; flex-direction: column; }
+button, input, textarea { font: inherit; color: inherit; }
+a { color: var(--kesari-deep); }
+:focus-visible { outline: 3px solid var(--kumkum); outline-offset: 2px; border-radius: 4px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+/* ---------- The saffron band and the crest ---------- */
+.band { background: var(--kesari); height: 132px; position: relative; flex: none; transition: height .45s ease; }
+.band::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: var(--haldi); }
+.crest { position: absolute; left: 50%; bottom: -62px; width: 148px; height: 148px; margin-left: -74px; border-radius: 50%;
+  background: var(--patra); border: 5px solid var(--haldi); box-shadow: 0 0 0 5px var(--kesari); z-index: 2;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; transition: transform .45s ease, bottom .45s ease; transform-origin: 50% 100%; }
+.crest .tilak { width: 17px; height: 29px; margin-top: -4px; flex: none; }
+.crest .om { width: 66px; height: 58px; margin-top: 5px; flex: none; }
+.clear { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); background: transparent; border: 1.5px solid rgba(255,249,234,.75); color: var(--patra);
+  padding: 5px 16px; border-radius: 99px; cursor: pointer; font-weight: 600; font-size: 15px; display: none; }
+.clear:hover { background: rgba(255,249,234,.18); }
+.wordmark { position: absolute; left: 24px; top: 50%; transform: translateY(-50%); color: var(--patra); font: 400 21px/1 var(--serif); display: none; }
+
+body.talking .band { height: 58px; position: sticky; top: 0; z-index: 5; }
+body.talking .crest { transform: scale(.5); bottom: -30px; }
+body.talking .clear, body.talking .wordmark { display: block; }
+
+/* ---------- Home ---------- */
+.home { text-align: center; padding: 86px 24px 40px; flex: 1; }
+.home h1 { font: 400 clamp(40px, 6vw, 68px)/1.05 var(--serif); margin: 0; letter-spacing: -.01em; }
+.home .gloss { font: italic 400 19px/1.4 var(--serif); color: var(--ink-soft); margin: 10px 0 0; }
+.home .what { max-width: 40em; margin: 22px auto 0; font-size: 18.5px; }
+.home .ask { margin: 30px auto 0; max-width: 780px; }
+.chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 900px; margin: 26px auto 0; padding: 0; list-style: none; }
+.chips button { background: transparent; border: 1.5px solid var(--kesari); color: var(--kesari-deep); border-radius: 99px; padding: 6px 17px; cursor: pointer; font-size: 16px; }
+.chips button:hover { background: var(--kesari); color: var(--patra); }
+.corpus { margin: 46px auto 0; max-width: 46em; color: var(--ink-soft); font-size: 16px; }
+.corpus b { color: var(--ink); font-weight: 600; }
+body.talking .home { display: none; }
+
+/* ---------- Ask box ---------- */
+.ask { display: flex; align-items: flex-end; gap: 8px; background: var(--patra); border: 2px solid var(--kesari); border-radius: 28px; padding: 7px 7px 7px 22px; }
+.ask:focus-within { border-color: var(--kumkum); }
+.ask textarea { flex: 1; border: 0; background: transparent; resize: none; outline: 0; padding: 9px 0; font-size: 18.5px; line-height: 1.4; max-height: 9em; min-width: 0; }
+.ask textarea::placeholder { color: #A98672; }
+.ask button { flex: none; background: var(--kumkum); color: var(--patra); border: 0; border-radius: 99px; padding: 10px 24px; font-weight: 600; cursor: pointer; }
+.ask button:hover { background: #8E0C14; }
+.ask button:disabled { opacity: .5; cursor: default; }
+
+/* ---------- Conversation ---------- */
+.thread { display: none; flex: 1; padding: 62px clamp(18px, 4vw, 64px) 150px; }
+body.talking .thread { display: block; }
+.turn { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 clamp(28px, 4.5vw, 76px); padding: 34px 0 40px; border-top: 1px solid var(--rule); }
+.turn:first-child { border-top: 0; padding-top: 10px; }
+.turn h2 { grid-column: 1 / -1; font: 400 clamp(27px, 3vw, 38px)/1.18 var(--serif); margin: 0 0 22px; max-width: 26em; }
+.answer { font: 400 19.5px/1.68 var(--serif); max-width: 36em; }
+.answer p { margin: 0 0 1em; }
+.answer ul { margin: 0 0 1em; padding-left: 1.2em; }
+.answer strong { font-weight: 400; color: var(--kumkum); }
+.answer .cite { font: 600 12.5px/1 var(--sans); vertical-align: 3px; margin-left: 2px; text-decoration: none; color: var(--kesari-deep); background: transparent; border: 1.5px solid var(--kesari); border-radius: 99px; padding: 1px 6px 2px; white-space: nowrap; }
+.answer .cite:hover, .answer .cite.lit { background: var(--kesari); color: var(--patra); }
+.wait { color: var(--ink-soft); font: italic 400 18px var(--serif); }
+.wait::after { content: ""; display: inline-block; width: 1.2em; text-align: left; animation: dots 1.4s steps(4, end) infinite; }
+@keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+.note { font: 400 16px/1.5 var(--sans); background: #FBE3C2; border-left: 4px solid var(--kesari); padding: 10px 14px; margin: 0 0 1em; }
+
+.moments h3 { font: 600 17px/1.3 var(--sans); margin: 4px 0 2px; }
+.moments .sub { color: var(--ink-soft); font-size: 15.5px; margin: 0 0 14px; }
+.ep { margin: 0 0 20px; padding-left: 16px; border-left: 3px solid var(--haldi); }
+.ep h4 { font: 400 19px/1.3 var(--serif); margin: 0 0 6px; }
+.ep ol { list-style: none; margin: 0; padding: 0; }
+.moment { display: grid; grid-template-columns: 5.4em 1fr; gap: 0 12px; padding: 7px 8px 7px 0; border-radius: 6px; scroll-margin-top: 90px; }
+.moment.lit { background: #FBE3C2; }
+.moment a.time { font: 600 15.5px/1.5 var(--sans); color: var(--kesari-deep); text-decoration: none; white-space: nowrap; display: flex; align-items: baseline; gap: 5px; }
+.moment a.time:hover span { text-decoration: underline; }
+.moment a.time svg { width: 9px; height: 10px; flex: none; fill: currentColor; }
+.moment p { margin: 0; font-size: 15.5px; line-height: 1.5; color: #55291F; }
+.moment mark { background: transparent; color: var(--kumkum); font-weight: 600; }
+.moment .n { font: 600 12px/1 var(--sans); border: 1.5px solid var(--rule); color: var(--ink-soft); border-radius: 99px; padding: 1px 6px 2px; margin-right: 6px; vertical-align: 1px; }
+.moment.cited .n { background: var(--kesari); border-color: var(--kesari); color: var(--patra); }
+.more { background: transparent; border: 1.5px solid var(--kesari); color: var(--kesari-deep); border-radius: 99px; padding: 5px 16px; cursor: pointer; font-size: 15.5px; }
+.more:hover { background: var(--kesari); color: var(--patra); }
+.spell { margin: 16px 0 0; font-size: 15px; color: var(--ink-soft); }
+.spell summary { cursor: pointer; }
+.spell p { margin: 6px 0 0; }
+.empty { color: var(--ink-soft); }
+
+.dock { position: fixed; left: 0; right: 0; bottom: 0; padding: 26px clamp(18px, 4vw, 64px) 18px; background: linear-gradient(to top, var(--chandan) 62%, rgba(250,240,215,0)); display: none; z-index: 4; }
+body.talking .dock { display: block; }
+.dock .ask { max-width: 900px; margin: 0 auto; }
+
+footer { text-align: center; color: var(--ink-soft); font-size: 14.5px; padding: 18px 24px 26px; }
+body.talking footer { display: none; }
+
+@media (max-width: 860px) {
+  .turn { grid-template-columns: minmax(0, 1fr); }
+  .moments { margin-top: 26px; }
+  .wordmark { display: none !important; }
+  .clear { right: 14px; }
+  .band { height: 104px; }
+  .home { padding-top: 80px; }
+  .ask button { padding: 10px 18px; }
+}
+@media (prefers-reduced-motion: reduce) { .band, .crest { transition: none; } .wait::after { animation: none; content: "..."; } }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <span class="wordmark">Jijñāsu Saṁvāda</span>
+  <div class="crest" role="img" aria-label="Om, with a red kumkum tilak above it">
+    <svg class="tilak" viewBox="0 0 20 34" aria-hidden="true"><path d="M10 0C12.6 7 15 11.5 15 16a5 5 0 0 1-10 0C5 11.5 7.4 7 10 0Z" fill="#B0121B"/><circle cx="10" cy="28.5" r="4.6" fill="#B0121B"/></svg>
+    <svg class="om" viewBox="40 -825 906 796" aria-hidden="true"><path transform="scale(1,-1)" fill="#3A130E" d="M801 138Q780 138 755 146Q730 155 703 180Q676 205 648 252Q631 237 611 228Q591 218 565 218Q543 218 520 226Q496 234 479 245L475 243Q486 212 486 184Q486 140 464 104Q443 69 406 49Q368 29 320 29Q254 29 204 64Q155 99 116 156Q76 214 40 283L78 305Q96 272 116 237Q137 202 162 171Q187 140 218 121Q249 102 287 102Q321 102 350 118Q379 134 398 162Q416 190 416 226Q416 269 392 289Q367 309 334 309Q306 309 276 298Q246 286 223 275L180 348Q207 363 240 375Q272 387 306 387Q310 387 315 387Q342 406 356 432Q370 457 370 483Q370 511 353 530Q336 548 301 548Q271 548 228 534Q184 521 143 495L99 570Q143 596 188 608Q232 620 265 620Q312 620 344 600Q377 579 397 547Q417 515 426 482Q436 449 436 423Q436 408 431 388Q426 369 407 348Q429 321 456 303Q483 285 517 285Q552 285 577 304Q602 322 623 349Q644 376 666 402Q687 429 714 448Q742 466 782 466Q824 466 862 444Q899 421 922 382Q946 342 946 290Q946 244 926 210Q907 176 874 157Q842 138 801 138ZM384 732 418 750Q453 685 489 658Q525 632 558 632Q592 632 618 652Q644 673 662 703Q681 733 691 760L760 707Q732 631 684 599Q635 567 584 567Q517 567 468 612Q418 658 384 732ZM678 286Q695 246 724 229Q752 212 774 212Q797 212 822 226Q848 240 866 267Q884 294 884 331Q884 363 866 384Q849 405 815 405Q783 405 760 386Q737 368 718 340Q698 313 678 286ZM555 825 620 760 555 697 491 760Z"/></svg>
+  </div>
+  <button class="clear" id="clear" type="button">Clear chat</button>
+</header>
+
+<main class="home" id="home">
+  <h1>Jijñāsu Saṁvāda</h1>
+  <p class="gloss">a seeker's dialogue</p>
+  <p class="what">Ask anything about the Bhagavad Gita. The answer comes only from Swami Anish Chaitanya's talks, with a link to every moment where he speaks about it.</p>
+  <form class="ask" data-ask>
+    <label class="sr" for="q1">Your question</label>
+    <textarea id="q1" rows="1" placeholder="Ask about a verse, a Sanskrit term or an idea" maxlength="600" autofocus></textarea>
+    <button type="submit">Ask</button>
+  </form>
+  <ul class="chips" id="chips">
+    <li><button type="button">What is nishkama karma?</button></li>
+    <li><button type="button">Who is a sthitaprajna?</button></li>
+    <li><button type="button">Explain verse 2.47</button></li>
+    <li><button type="button">What is svadharma?</button></li>
+    <li><button type="button">How do desire and anger arise?</button></li>
+    <li><button type="button">What are the three gunas?</button></li>
+  </ul>
+  <p class="corpus" id="corpus"></p>
+</main>
+
+<section class="thread" id="thread" aria-live="polite"></section>
+
+<div class="dock">
+  <form class="ask" data-ask>
+    <label class="sr" for="q2">Ask a follow-up</label>
+    <textarea id="q2" rows="1" placeholder="Ask a follow-up" maxlength="600"></textarea>
+    <button type="submit">Ask</button>
+  </form>
+</div>
+
+<footer>An independent study aid. The talks belong to Swami Anish Chaitanya; text is from YouTube's automatic captions, so always listen to the linked moment.</footer>
+
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const clock = (s) => { const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = String(s % 60).padStart(2, '0'); return h ? `${h}:${String(m).padStart(2, '0')}:${x}` : `${m}:${x}`; };
+const PLAY = '<svg viewBox="0 0 9 10" aria-hidden="true"><path d="M0 0l9 5-9 5z"/></svg>';
+
+let turns = [], busy = false;
+
+// Real corpus numbers, written by the index build.
+fetch('/stats.json').then((r) => r.json()).then((s) => {
+  const ch = Object.keys(s.chapters).map(Number).sort((a, b) => a - b), last = ch[ch.length - 1];
+  $('#corpus').innerHTML = `Searches <b>${s.episodes} episodes</b> (about <b>${s.hours} hours</b> and <b>${(s.words / 1e6).toFixed(1)} million words</b> of talks), covering Chapters ${ch[0]} to ${last}, up to verse ${last}.${s.chapters[last].to}, plus a few talks on other topics.`;
+}).catch(() => {});
+
+function markdown(src, turn) {
+  const inline = (t) => esc(t)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/\[(\d+(?:\s*,\s*\d+)*)\]/g, (_, list) => list.split(',').map((n) => {
+      n = +n.trim(); const m = turn.byN.get(n);
+      return m ? `<a class="cite" href="${link(m)}" target="_blank" rel="noopener" data-n="${n}" title="${esc(m.title)} at ${clock(m.start)}">${n}</a>` : '';
+    }).join(''));
+  let html = '', list = false;
+  for (const block of src.split(/\n{2,}/)) {
+    const lines = block.split('\n').filter((l) => l.trim());
+    if (!lines.length) continue;
+    if (lines.every((l) => /^\s*[-*•]\s+/.test(l))) html += '<ul>' + lines.map((l) => `<li>${inline(l.replace(/^\s*[-*•]\s+/, ''))}</li>`).join('') + '</ul>';
+    else html += `<p>${inline(lines.join(' ').replace(/^#+\s*/, ''))}</p>`;
+  }
+  return html;
+}
+const link = (m) => `https://www.youtube.com/watch?v=${m.videoId}&t=${m.start}s`;
+
+function renderMoments(turn) {
+  const el = turn.el.moments;
+  if (!turn.moments.length) { el.innerHTML = turn.done ? '<p class="empty">No matching moments in the transcripts. Try other words, or a verse number like 2.47.</p>' : ''; return; }
+  const cited = new Set([...turn.text.matchAll(/\[(\d+(?:\s*,\s*\d+)*)\]/g)].flatMap((m) => m[1].split(',').map(Number)));
+  const groups = new Map();
+  for (const m of turn.moments) (groups.get(m.episode) || groups.set(m.episode, []).get(m.episode)).push(m);
+  const n = turn.moments.length, e = groups.size;
+  let html = `<h3>${n} moment${n > 1 ? 's' : ''} in ${e} episode${e > 1 ? 's' : ''}</h3><p class="sub">Each time opens the video at that point.</p>`;
+  for (const ms of groups.values()) {
+    ms.sort((a, b) => a.start - b.start);
+    html += `<div class="ep"><h4>${esc(ms[0].title)}</h4><ol>` + ms.map((m) => {
+      const words = new Set(m.matched || []);
+      const text = esc(m.text).replace(/[A-Za-z0-9]+/g, (w) => words.has(w.toLowerCase()) ? `<mark>${w}</mark>` : w);
+      return `<li class="moment${cited.has(m.n) ? ' cited' : ''}" ${m.n ? `id="t${turn.i}m${m.n}"` : ''}>
+        <a class="time" href="${link(m)}" target="_blank" rel="noopener" aria-label="Play ${esc(m.title)} at ${clock(m.start)} on YouTube">${PLAY}<span>${clock(m.start)}</span></a>
+        <p>${m.n ? `<span class="n">${m.n}</span>` : ''}${text}</p></li>`;
+    }).join('') + '</ol></div>';
+  }
+  if (turn.done && !turn.expanded) html += `<button class="more" type="button">Show more moments</button>`;
+  const sp = Object.entries(turn.spellings).filter(([k, v]) => v.some((s) => s !== k)).slice(0, 4);
+  if (sp.length) html += `<details class="spell"><summary>Caption spellings also searched</summary>${sp.map(([k, v]) => `<p><b>${esc(k)}</b>: ${esc(v.filter((s) => s !== k).join(', '))}</p>`).join('')}</details>`;
+  el.innerHTML = html;
+}
+
+function renderAnswer(turn) {
+  const el = turn.el.answer;
+  let html = turn.error ? `<p class="note">${esc(turn.error)}</p>` : '';
+  if (turn.text) html += markdown(turn.text, turn);
+  else if (!turn.done) html += `<p class="wait">${turn.moments.length ? 'Reading what Swamiji says' : 'Searching the talks'}</p>`;
+  else if (!turn.error) html += '<p class="empty">No answer this time. Please ask again in different words.</p>';
+  el.innerHTML = html;
+}
+
+async function ask(question) {
+  question = question.trim();
+  if (!question || busy) return;
+  busy = true; setBusy();
+  document.body.classList.add('talking');
+  const history = turns.filter((t) => t.text).flatMap((t) => [{ role: 'user', text: t.q }, { role: 'assistant', text: t.text }]);
+  const node = document.createElement('article');
+  node.className = 'turn';
+  node.innerHTML = `<h2></h2><div class="answer"></div><aside class="moments" aria-label="Moments in the talks"></aside>`;
+  $('h2', node).textContent = question;
+  const turn = { i: turns.length, q: question, text: '', moments: [], byN: new Map(), spellings: {}, done: false, error: '', el: { answer: $('.answer', node), moments: $('.moments', node) } };
+  turns.push(turn);
+  $('#thread').append(node);
+  renderAnswer(turn);
+  node.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+
+  const onEvent = (event, data) => {
+    if (event === 'moments') {
+      for (const m of data.moments) { turn.moments.push(m); turn.byN.set(m.n, m); }
+      Object.assign(turn.spellings, data.spellings);
+      renderMoments(turn); if (!turn.text) renderAnswer(turn);
+    } else if (event === 'text') { turn.text += data.delta; renderAnswer(turn); }
+    else if (event === 'error') { turn.error = data.message; }
+  };
+  try {
+    const r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ question, history }) });
+    if (!r.ok || !r.body) throw new Error('Request failed');
+    const reader = r.body.getReader(), dec = new TextDecoder();
+    let buf = '';
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let i;
+      while ((i = buf.indexOf('\n\n')) >= 0) {
+        const frame = buf.slice(0, i); buf = buf.slice(i + 2);
+        const ev = frame.match(/^event: (.+)$/m), da = frame.match(/^data: (.+)$/m);
+        if (ev && da) onEvent(ev[1], JSON.parse(da[1]));
+      }
+    }
+  } catch { turn.error = turn.error || 'Could not reach the server. Check your connection and ask again.'; }
+  turn.done = true;
+  renderAnswer(turn); renderMoments(turn);
+  busy = false; setBusy();
+  $('#q2').focus({ preventScroll: true });
+}
+
+function setBusy() { for (const b of document.querySelectorAll('.ask button')) { b.disabled = busy; b.textContent = busy ? 'Asking' : 'Ask'; } }
+
+// Ask boxes: Enter sends, Shift+Enter makes a new line, the box grows with the text.
+for (const form of document.querySelectorAll('[data-ask]')) {
+  const ta = $('textarea', form);
+  const send = () => { const v = ta.value; if (busy || !v.trim()) return; ta.value = ''; ta.style.height = ''; ask(v); };
+  form.addEventListener('submit', (e) => { e.preventDefault(); send(); });
+  ta.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); } });
+  ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; });
+}
+$('#chips').addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON') ask(e.target.textContent); });
+
+$('#clear').addEventListener('click', () => {
+  if (busy) return;
+  turns = []; $('#thread').innerHTML = '';
+  document.body.classList.remove('talking');
+  scrollTo(0, 0); $('#q1').focus();
+});
+
+// A citation in the answer lights up its moment; "Show more moments" widens the search.
+$('#thread').addEventListener('mouseover', (e) => light(e, true));
+$('#thread').addEventListener('mouseout', (e) => light(e, false));
+function light(e, on) {
+  const c = e.target.closest?.('.cite'); if (!c) return;
+  const i = [...$('#thread').children].indexOf(c.closest('.turn'));
+  document.getElementById(`t${i}m${c.dataset.n}`)?.classList.toggle('lit', on);
+}
+$('#thread').addEventListener('click', async (e) => {
+  const b = e.target.closest('.more'); if (!b) return;
+  const turn = turns[[...$('#thread').children].indexOf(b.closest('.turn'))];
+  b.disabled = true; b.textContent = 'Searching';
+  try {
+    const r = await (await fetch('/api/search?limit=40&q=' + encodeURIComponent(turn.q))).json();
+    const have = new Set(turn.moments.map((m) => m.id));
+    for (const m of r.moments) if (!have.has(m.id)) turn.moments.push(m);
+  } catch {}
+  turn.expanded = true; renderMoments(turn);
+});
+</script>
+</body>
+</html>

@@ -1,138 +1,116 @@
-import os
+"""Downloads English captions for any playlist episode we don't have yet into data/ep_NNN.json.
+
+Episodes are recognised by their YouTube video id, so re-ordering the playlist never
+causes a re-download or a mix-up. Exit code: 0 = fine (even if nothing new), 1 = at
+least one new episode could not be downloaded (so a scheduled run shows as failed).
+"""
+import glob
 import json
-import yt_dlp
-import time
+import os
 import random
+import re
+import sys
+import time
+import urllib.request
+
+import yt_dlp
 
 PLAYLIST_URL = "https://www.youtube.com/playlist?list=PLZjoPv4SqEAXVvoHg7EueLBINTFAhkzyp"
 OUTPUT_DIR = "data"
+LANGS = ["en", "en-US", "en-orig"]
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+
 
 def format_time(seconds):
     return f"{int(seconds // 60):02d}:{int(seconds % 60):02d}"
 
-def extract_episode(video_info, idx):
-    v_id = video_info.get("id")
-    title = video_info.get("title", f"Episode_{idx}")
-    
-    if not v_id or title in ["[Private video]", "[Deleted video]"]:
-        return False
 
-    filename = f"{OUTPUT_DIR}/ep_{idx:03d}.json"
-    if os.path.exists(filename):
-        print(f"[{idx}] ⏭️ Already exists: {title}")
-        return True
+def known_episodes():
+    ids, highest = set(), 0
+    for path in glob.glob(os.path.join(OUTPUT_DIR, "ep_*.json")):
+        highest = max(highest, int(re.search(r"ep_(\d+)", path).group(1)))
+        with open(path, encoding="utf-8") as f:
+            ids.add(json.load(f).get("video_id"))
+    return ids, highest
 
-    print(f"[{idx}] Fetching: {title}...")
 
-    ydl_opts = {
-        'skip_download': True,
-        'writesubtitles': True,
-        'writeautomaticsub': True,
-        'subtitleslangs': ['en', 'en-US', 'en-orig'],
-        'quiet': True,
-        'no_warnings': True,
-    }
+def caption_url(info):
+    for tracks in (info.get("subtitles") or {}, info.get("automatic_captions") or {}):  # manual first
+        for lang in LANGS:
+            for fmt in tracks.get(lang, []):
+                if fmt.get("ext") == "json3":
+                    return fmt.get("url")
+    return None
 
-    # Try up to 3 times per episode if YouTube blocks us
+
+def fetch_segments(video_id):
+    opts = {"skip_download": True, "writesubtitles": True, "writeautomaticsub": True,
+            "subtitleslangs": LANGS, "quiet": True, "no_warnings": True}
+    with yt_dlp.YoutubeDL(opts) as ydl:
+        info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
+    url = caption_url(info)
+    if not url:
+        return None
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req) as response:
+        events = json.loads(response.read().decode("utf-8")).get("events", [])
+    segments = []
+    for ev in events:
+        text = "".join(s.get("utf8", "") for s in ev.get("segs", []))
+        text = re.sub(r"\[[^\]]{0,30}\]", " ", text)          # [Music], [Applause] ...
+        text = re.sub(r"\s+", " ", text).strip()
+        if text:
+            start = int(ev.get("tStartMs", 0) // 1000)
+            segments.append({"start_seconds": start, "timestamp": format_time(start), "text": text})
+    return segments
+
+
+def download(video_id, title, number):
     for attempt in range(1, 4):
         try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(f"https://www.youtube.com/watch?v={v_id}", download=False)
-                
-                subs = info.get('subtitles', {})
-                auto_subs = info.get('automatic_captions', {})
-                
-                sub_url = None
-                for lang in ['en', 'en-US', 'en-orig']:
-                    if lang in subs:
-                        for fmt in subs[lang]:
-                            if fmt.get('ext') == 'json3':
-                                sub_url = fmt.get('url')
-                                break
-                        if sub_url: break
-
-                if not sub_url:
-                    for lang in ['en', 'en-US', 'en-orig']:
-                        if lang in auto_subs:
-                            for fmt in auto_subs[lang]:
-                                if fmt.get('ext') == 'json3':
-                                    sub_url = fmt.get('url')
-                                    break
-                            if sub_url: break
-
-                if not sub_url:
-                    print(f"  ⚠️ No English transcript track found for: {title}")
-                    return False
-
-                import urllib.request
-                req = urllib.request.Request(sub_url, headers={'User-Agent': 'Mozilla/5.0'})
-                with urllib.request.urlopen(req) as response:
-                    caption_json = json.loads(response.read().decode('utf-8'))
-
-                segments = []
-                for ev in caption_json.get('events', []):
-                    start_ms = ev.get('tStartMs', 0)
-                    start_sec = int(start_ms // 1000)
-                    segs = ev.get('segs', [])
-                    line_text = "".join([s.get('utf8', '') for s in segs]).replace('\n', ' ').strip()
-                    
-                    if line_text and not (line_text.startswith('[') and line_text.endswith(']')):
-                        segments.append({
-                            "start_seconds": start_sec,
-                            "timestamp": format_time(start_sec),
-                            "text": line_text
-                        })
-
-                if not segments:
-                    print(f"  ⚠️ Transcript was empty for: {title}")
-                    return False
-
-                ep_data = {
-                    "episode": idx,
-                    "title": title,
-                    "video_id": v_id,
-                    "segments": segments
-                }
-
-                with open(filename, "w", encoding="utf-8") as f:
-                    json.dump(ep_data, f, ensure_ascii=False, indent=2)
-
-                print(f"  ✓ Saved Episode {idx} ({len(segments)} lines)")
-                return True
-
-        except Exception as e:
-            error_msg = str(e)
-            if "429" in error_msg or "Too Many Requests" in error_msg:
-                # If YouTube rate limits us, wait 60 seconds before trying again
-                print(f"  ⚠️ YouTube Rate Limit Hit (429). Taking a 60-second cooldown... (Attempt {attempt}/3)")
-                time.sleep(60)
-            else:
-                print(f"  ✗ Error on {title}: {error_msg}")
-                time.sleep(5) # Small pause for random network drops
-                
-    print(f"  ❌ Failed to download {title} after 3 attempts.")
+            segments = fetch_segments(video_id)
+            if not segments:
+                print(f"  No English captions yet for: {title} (YouTube can take a day or two to add them)")
+                return False
+            path = os.path.join(OUTPUT_DIR, f"ep_{number:03d}.json")
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump({"episode": number, "title": title, "video_id": video_id, "segments": segments},
+                          f, ensure_ascii=False, indent=2)
+            print(f"  Saved {path} ({len(segments)} lines)")
+            return True
+        except Exception as e:  # noqa: BLE001
+            msg = str(e)
+            wait = 60 if ("429" in msg or "Too Many Requests" in msg) else 5
+            print(f"  Attempt {attempt}/3 failed: {msg[:200]}. Waiting {wait}s.")
+            time.sleep(wait)
     return False
 
+
 def main():
-    print("Connecting to YouTube Playlist...")
-    ydl_opts = {'extract_flat': 'in_playlist', 'quiet': True, 'no_warnings': True}
-    
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        result = ydl.extract_info(PLAYLIST_URL, download=False)
-        entries = result.get('entries', [])
-        
-    print(f"Found {len(entries)} episodes. Starting extraction...\n")
+    known, highest = known_episodes()
+    print(f"Have {len(known)} episodes. Checking the playlist...")
+    with yt_dlp.YoutubeDL({"extract_flat": "in_playlist", "quiet": True, "no_warnings": True}) as ydl:
+        entries = ydl.extract_info(PLAYLIST_URL, download=False).get("entries", [])
+    new = [e for e in entries
+           if e.get("id") and e["id"] not in known and e.get("title") not in ("[Private video]", "[Deleted video]")]
+    print(f"Playlist has {len(entries)} videos, {len(new)} new.")
 
-    saved_count = 0
-    for idx, entry in enumerate(entries, 1):
-        if extract_episode(entry, idx):
-            saved_count += 1
-            # Add a random human-like delay between 3 and 7 seconds after every successful download
-            delay = random.uniform(3.0, 7.0)
-            time.sleep(delay)
+    saved, failed = 0, []
+    for entry in new:
+        title = entry.get("title") or entry["id"]
+        print(f"New: {title}")
+        if download(entry["id"], title, highest + 1):
+            highest += 1
+            saved += 1
+            time.sleep(random.uniform(3.0, 7.0))
+        else:
+            failed.append(title)
 
-    print(f"\n🎉 Finished! Total {saved_count} episodes processed into '{OUTPUT_DIR}/'.")
+    print(f"\nDone. {saved} new episode(s) saved.")
+    if failed:
+        print("Could not download: " + "; ".join(failed))
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

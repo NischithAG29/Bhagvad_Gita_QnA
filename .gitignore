@@ -1,2 +1,8 @@
-
 .streamlit/secrets.toml
+.env*
+node_modules/
+db/
+public/fonts/
+public/stats.json
+.vercel
+__pycache__/

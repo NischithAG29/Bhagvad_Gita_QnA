@@ -1,0 +1,9 @@
+app.py
+build_index.py
+requirements.txt
+gita_search.db
+ingest.py
+update.bat
+.devcontainer
+.github
+README.md

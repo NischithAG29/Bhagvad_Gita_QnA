@@ -1,40 +1,53 @@
-# 🕉️ Bhagavad Gita AI Navigator
+# Jijñāsu Saṁvāda
 
-An intelligent, domain-specific Retrieval-Augmented Generation (RAG) research assistant built to navigate, search, and synthesize insights across **128 complete podcast episodes** of Swami Anish Chaitanya's Bhagavad Gita series.
+Ask a question about the Bhagavad Gita and get an answer drawn only from Swami Anish Chaitanya's talks, with a link to every moment in the videos where he speaks about it.
 
-Click here: [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://bhagvadgitaqna.streamlit.app/)
----
+[Playlist on YouTube](https://www.youtube.com/playlist?list=PLZjoPv4SqEAXVvoHg7EueLBINTFAhkzyp)
 
-## 📌 Overview
+## What it covers
 
-Exploring long-form philosophical audio discourses can be challenging when searching for specific verses, Sanskrit terminology, or conceptual breakdowns. 
+128 episodes, about 174 hours and 1.4 million words of talks: Gita Chapters 1 to 3 (up to verse 3.38) plus a few talks on other topics. These numbers are computed from the transcripts on every build and shown on the home page.
 
-**Bhagavad Gita AI Navigator** solves this by combining high-speed full-text search indexing with Google's Gemini LLM function calling. It allows users to ask open-ended conceptual or verse-specific questions in natural language and receive grounded, synthesized answers backed by clickable, timestamped YouTube citations.
+The text is YouTube's automatic captions, so Sanskrit words are often misspelled. The answer is a guide to the talks, not a substitute for listening to them.
 
----
+## How it works
 
-## ✨ Key Features
+1. **Search.** The question is searched in a SQLite FTS5 index of the transcripts (26,101 passages).
+   - *Sanskrit spellings.* Captions write "nishkama" as nishkam, nishkm or "nish karma", and "sthitaprajna" as "stitta pragya". Every word in the transcripts is reduced to a sound key, and a query word matches any caption word whose key is close to its own, including words the captions split in two.
+   - *Verse numbers.* "2.47" or "chapter 3 verse 27" narrows the search to the episodes whose titles cover that verse.
+2. **Answer.** Up to 16 passages go to Gemini (`gemini-flash-lite-latest`), which may search again with other words, then writes an answer that cites passages by number. Earlier questions in the conversation are sent along, so follow-ups work.
+3. **Moments.** Every passage found is listed beside the answer, grouped by episode, each linking to that second of the video. "Show more moments" widens the list to 40.
 
-* **Sub-Second Transcript Retrieval:** Uses SQLite FTS5 (Full-Text Search) to query across 50,000+ lines of dialogue in milliseconds without heavy in-memory compute overhead.
-* **Grounded LLM Synthesis:** Integrates Google Gemini 2.5 (`gemini-flash-lite-latest`) via tool/function calling to prevent hallucinations and strictly ground answers in the source transcripts.
-* **Direct Video Deep-Linking:** Automatically generates verifiable source citations linked to the exact minute and second of each YouTube episode.
-* **Interactive UI:** Built with Streamlit, featuring quick-start topic exploration chips, corpus metadata metrics, and dynamic chat history management.
-* **Zero-Cold-Start Startup:** Lightweight database architecture ensures instant application launch and minimal resource consumption.
+If the AI is unavailable (for example the free daily quota is used up), the moments are still shown.
 
----
+## Files
 
-## 🏗️ Architecture
+| Path | Purpose |
+| --- | --- |
+| `public/index.html` | The whole interface (no framework) |
+| `api/ask.js` | Search + Gemini, streamed to the page |
+| `api/search.js` | Search only, for "Show more moments" |
+| `lib/search.mjs`, `lib/text.mjs` | Spelling-tolerant search |
+| `scripts/build-index.mjs` | Builds the index from `data/` on every deploy |
+| `data/ep_NNN.json` | One transcript per episode |
+| `ingest.py` | Downloads captions for new playlist episodes |
+| `update.bat` | Runs the update by double-click on Windows |
 
-```text
-User Question
-      │
-      ▼
-Streamlit Interface (app.py)
-      │
-      ▼
-Google Gemini LLM Agent ──(Function Call)──► SQLite FTS5 Database (gita_search.db)
-      │                                                │
-      │◄────────── Top Relevant Segments ──────────────┘
-      │
-      ▼
-Synthesized Answer + Timestamped YouTube Citations
+`app.py`, `build_index.py`, `requirements.txt` and `gita_search.db` are the earlier Streamlit version, kept so that app keeps running until this one replaces it.
+
+## Run it locally
+
+Needs Node.js 22.
+
+```
+npm install
+npm run build
+set GEMINI_API_KEY=your-key      (PowerShell: $env:GEMINI_API_KEY="your-key")
+npm run dev
+```
+
+Then open http://localhost:3000.
+
+## Deploy
+
+Hosted on Vercel's free tier. Vercel runs `npm run build` on every push to `main`, which rebuilds the index, so adding an episode only means adding its JSON file to `data/`. The one setting needed is the environment variable `GEMINI_API_KEY`.
